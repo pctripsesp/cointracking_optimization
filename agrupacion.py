@@ -4,10 +4,10 @@ import os
 
 
 # COPY FILE TO NEW ONE
-os.system('cp original.xlsx new.xlsx')
+os.system('cp original.xlsx newV2.xlsx')
 
 # FROM ORIGINAL
-wb = load_workbook('new.xlsx')
+wb = load_workbook('newV2.xlsx')
 ws = wb.active
 
 # NUM TX
@@ -35,8 +35,8 @@ flag_first_in_group = True
 # DETECT SAME TIME OPERATIONS
 for row in (range(4,len(ws['A'])+1)):
 
-    # CHECK IF SAME TIME
-    if (ws['K'+str(row)].value == ws['K'+str(row-1)].value) \
+    # CHECK IF SAME DAY AND HOUR  
+    if (ws['K'+str(row)].value[0:10] == ws['K'+str(row-1)].value[0:10]) \
         and (ws['C'+str(row)].value == ws['C'+str(row-1)].value) \
         and (ws['E'+str(row)].value == ws['E'+str(row-1)].value) \
         and (ws['H'+str(row)].value == ws['H'+str(row-1)].value) \
@@ -101,7 +101,8 @@ for row in (range(4,len(ws['A'])+1)):
             F = 0
 
 
-wb.save("changes.xlsx")
+wb.save("changesV2.xlsx")
+
 
 c = 0
 ## NOW DELETE RED ROWS ON new.xlsx
@@ -111,5 +112,5 @@ for row_to_delete in delete_rows:
 
 
 print(len(ws['A'])-2, ' transactions now')
-wb.save("new.xlsx")
+wb.save("newV2.xlsx")
 wb.close()
