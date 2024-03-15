@@ -1,13 +1,15 @@
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
-import os
+import os, time
 
+# LIST OF SCAM / FAKE TOKENS / WANT TO DELETE FOR SOME REASON
+fakeTokens =['BOBA', 'SGB', 'SGB2', 'SKY2', 'VIB', 'AUDIO', 'LIT2', 'ONT', 'MDX2', 'DODO', 'SYS', 'PNT2', 'SKY', 'VIB', 'OCEAN', 'KSM', 'CGB', 'AXAXIO']
 
 # COPY FILE TO NEW ONE
-os.system('cp original.xlsx newV2.xlsx')
+os.system('cp original.xlsx newV3.xlsx')
 
 # FROM ORIGINAL
-wb = load_workbook('newV2.xlsx')
+wb = load_workbook('newV3.xlsx')
 ws = wb.active
 
 # NUM TX
@@ -24,93 +26,120 @@ def printRow(row, color):
         for i in range(65,76):
             ws[chr(i)+str(row)].fill = PatternFill("solid", start_color="00FF00")
 
+
+# CHECK IF ROW IS COLORED
+def check_color(row):
+    if (ws['A'+str(row)].fill.start_color.index == "00000000"):
+        return True
+    else:
+        return False
+
+def check_red_color(row):
+    if (ws['A'+str(row)].fill.start_color.index == "00FF0000"):
+        return True
+
 B = 0
 D = 0
 F = 0
 group = []
-delete_rows = []
 flag_first_in_group = True
 
-
 # DETECT SAME TIME OPERATIONS
-for row in (range(4,len(ws['A'])+1)):
-
-    # CHECK IF SAME DAY AND HOUR  
-    if (ws['K'+str(row)].value[0:10] == ws['K'+str(row-1)].value[0:10]) \
-        and (ws['C'+str(row)].value == ws['C'+str(row-1)].value) \
-        and (ws['E'+str(row)].value == ws['E'+str(row-1)].value) \
-        and (ws['H'+str(row)].value == ws['H'+str(row-1)].value) \
-        and (ws['A'+str(row)].value == 'Operación' or ws['A'+str(row)].value == 'Otras comisiones'):
-
-        if flag_first_in_group:
-            group.append(row-1)
-            printRow(row-1, 'red')
-            delete_rows.append(row-1)
-            flag_first_in_group = False
+row = 3
+while True:
+    if (ws['A'+str(row)].value == None):
+        break
+    if check_color(row):
+        c = 0
+        mismaFecha = True
+        while mismaFecha:
+            c += 1 
+            #print()
+            #print("********")
+            #print("Comparando " + str(row) + " con " + str(row + c))
             try:
-                B += ws['B'+str(row-1)].value
+                if (ws['K'+str(row)].value[0:16] != ws['K'+str(row+c)].value[0:16]):
+                    mismaFecha = False
+                    break
             except:
-                B = None
-            try:
-                D += ws['D'+str(row-1)].value
-            except:
-                D = None
-            try:
-                F += ws['F'+str(row-1)].value
-            except:
-                F = None
+                break
+            #time.sleep(2)   
+            if (ws['C'+str(row)].value == ws['C'+str(row+c)].value) \
+                and (ws['E'+str(row)].value == ws['E'+str(row+c)].value) \
+                and (ws['H'+str(row)].value == ws['H'+str(row+c)].value) \
+                and (ws['A'+str(row)].value == 'Operación' or ws['A'+str(row)].value == 'Otras comisiones'):
+                #print("IGUALES")
+                if flag_first_in_group:
+                    group.append(row)
+                    printRow(row, 'red')
+                    flag_first_in_group = False
+                    try:
+                        B += ws['B'+str(row)].value
+                    except:
+                        B = None
+                    try:
+                        D += ws['D'+str(row)].value
+                        #print(D)
+                    except:
+                        D = None
+                    try:
+                        F += ws['F'+str(row)].value
+                    except:
+                        F = None
+                    
+                group.append(row+c)
+                printRow(row+c, 'red')
+                # SUM
+                try:
+                    B += ws['B'+str(row+c)].value
+                except:
+                    B = None
+                try:
+                    D += ws['D'+str(row+c)].value
+                    #print("sumamos", ws['D'+str(row+c)].value)
+                    #print(D)
+                except:
+                    D = None
+                try:
+                    F += ws['F'+str(row+c)].value
+                except:
+                    F = None 
             
-        group.append(row)
-        printRow(row, 'red')
-        delete_rows.append(row)
-        # SUM
-        try:
-            B += ws['B'+str(row)].value
-        except:
-            B = None
-        try:
-            D += ws['D'+str(row)].value
-        except:
-            D = None
-        try:
-            F += ws['F'+str(row)].value
-        except:
-            F = None
-
-    else: 
-        # WE GET NO MORE IN SAME GROUP
+        # DISTINTA FECHA
         if len(group)>0:
-            group = []
+            #print("--> agrupacion")
+            #print(group)
             flag_first_in_group = True
             # INSERT NEW ROW
-            ws.insert_rows(row)
-            ws['A'+str(row)] = ws['A'+str(row-1)].value
-            ws['B'+str(row)] = B
-            ws['C'+str(row)] = ws['C'+str(row-1)].value
-            ws['D'+str(row)] = D
-            ws['E'+str(row)] = ws['E'+str(row-1)].value
-            ws['F'+str(row)] = F
-            ws['G'+str(row)] = ws['G'+str(row-1)].value
-            ws['H'+str(row)] = ws['H'+str(row-1)].value
-            ws['I'+str(row)] = ws['I'+str(row-1)].value
-            ws['J'+str(row)] = ws['J'+str(row-1)].value
-            ws['K'+str(row)] = ws['K'+str(row-1)].value
-            printRow(row, 'green')
+            ws.insert_rows(group[-1]+1)
+            ws['A'+str(group[-1]+1)] = ws['A'+str(group[-1])].value
+            ws['B'+str(group[-1]+1)] = B
+            ws['C'+str(group[-1]+1)] = ws['C'+str(group[-1])].value
+            ws['D'+str(group[-1]+1)] = D
+            ws['E'+str(group[-1]+1)] = ws['E'+str(group[-1])].value
+            ws['F'+str(group[-1]+1)] = F
+            ws['G'+str(group[-1]+1)] = ws['G'+str(group[-1])].value
+            ws['H'+str(group[-1]+1)] = ws['H'+str(group[-1])].value
+            ws['I'+str(group[-1]+1)] = ws['I'+str(group[-1])].value
+            ws['J'+str(group[-1]+1)] = ws['J'+str(group[-1])].value
+            ws['K'+str(group[-1]+1)] = ws['K'+str(group[-1])].value
+            printRow(group[-1]+1, 'green')
             B = 0
             D = 0
             F = 0
+            group = []
+    
+    row += 1
 
+wb.save("changesV3.xlsx")
 
-wb.save("changesV2.xlsx")
+print("Hasta borrar", len(ws['A']) + 1)
+for row in reversed(range(3, len(ws['A']) + 1)):
+    if check_red_color(row):
+        ws.delete_rows(row)
 
-
-c = 0
-## NOW DELETE RED ROWS ON new.xlsx
-for row_to_delete in delete_rows:
-    ws.delete_rows(row_to_delete-c)
-    c+=1
 
 
 print(len(ws['A'])-2, ' transactions now')
-wb.save("newV2.xlsx")
+wb.save("newV3.xlsx")
 wb.close()
