@@ -58,7 +58,8 @@ while True:
             #print("********")
             #print("Comparando " + str(row) + " con " + str(row + c))
             try:
-                if (ws['K'+str(row)].value[0:16] != ws['K'+str(row+c)].value[0:16]):
+                if (ws['K'+str(row)].value[0:10] != ws['K'+str(row+c)].value[0:10]):    ## MODO AGRESIVO [0:10], MODO NORMAL [0:16] 
+                    #print(ws['K'+str(row)].value[0:10])
                     mismaFecha = False
                     break
             except:
@@ -67,7 +68,7 @@ while True:
             if (ws['C'+str(row)].value == ws['C'+str(row+c)].value) \
                 and (ws['E'+str(row)].value == ws['E'+str(row+c)].value) \
                 and (ws['H'+str(row)].value == ws['H'+str(row+c)].value) \
-                and (ws['A'+str(row)].value == 'Operación' or ws['A'+str(row)].value == 'Otras comisiones'):
+                and (ws['A'+str(row)].value == 'Operación' or ws['A'+str(row)].value == 'Otras comisiones' or ws['A'+str(row)].value == 'Recompensa / Bonificación'):
                 #print("IGUALES")
                 if flag_first_in_group:
                     group.append(row)
